@@ -1,0 +1,144 @@
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper .label {
+    color: #FFF;
+    font-family: Roboto, system-ui, Avenir, Helvetica, Arial, sans-serif;;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: normal;
+
+    margin-bottom: 12px;
+}
+
+.select-wrapper .dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+
+    border-radius: 8px;
+    border: 1px solid #333535;
+    background: #242529;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.16);
+
+    padding: 8px 0;
+
+    z-index: 1;
+}
+
+.select-wrapper .dropdown .search {
+    border-radius: 5px;
+    border: 1px solid #333535;
+    background: #2A2B31;
+    padding: 8px 16px 8px 44px; /* 16px + icon width 20px + gap 8px */
+    position: relative;
+    margin: 8px 12px;
+}
+
+.select-wrapper .dropdown .search .icon {
+    position: absolute;
+    left: 16px;
+    top: 8px;
+}
+
+.select-wrapper .dropdown .search input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: #FFF;
+    padding: 0;
+
+    height: 20px;
+    line-height: 20px;
+    font-size: 14px;
+}
+
+.select-wrapper .dropdown .cities {
+    overflow-y: scroll;
+    max-height: 160px;
+}
+
+.select-wrapper .dropdown .cities .text {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    position: relative;
+}
+
+.select-wrapper .dropdown .cities .text img {
+    position: absolute;
+    right: 16px;
+    top: 10px;
+}
+
+.select-wrapper.open .select-element {
+    border-color: #FBE54D;
+}
+
+.select-element {
+    border-radius: 6px;
+    border: 1px solid #333535;
+    background: #2A2B31;
+    padding: 12px 48px 12px 24px;
+    position: relative;
+    height: 28px;
+}
+
+.select-element.error {
+    border-color: #E76143;
+}
+
+.select-element .caret {
+    position: absolute;
+    top: 14px; /* 12px padding + (input height 28px - element height 24px) / 2 */
+    right: 26px;
+}
+
+.select-wrapper.open .caret {
+    transform: rotate(180deg);
+}
+
+.select-wrapper .error-text {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: #E76143;
+    color: #fff;
+
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%; /* 16.8px */
+
+    margin-top: 12px;
+}
+
+.select-wrapper .error-text .error-icon {
+    margin-top: 1px;
+}
+
+.select-element .text {
+    height: 28px;
+    line-height: 28px;
+    color: #FFF;
+    font-family: Roboto, system-ui, Avenir, Helvetica, Arial, sans-serif;;
+    font-size: 16px;
+    font-weight: 400;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.select-element .text.muted {
+    color: #848484;
+}
