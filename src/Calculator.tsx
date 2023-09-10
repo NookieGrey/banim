@@ -28,14 +28,14 @@ const cities = [
   "Зихрон-Яаков",
 ];
 
-const period = [
+const periods = [
   "В ближайший месяц",
   "В ближайшие 2 месяц",
   "В ближайшие 3 месяца",
   "В ближайшие 6 месяцев",
 ]
 
-const type = [
+const types = [
   "Квартира от застройщика",
   "Квартира на вторичном рынке",
   "Частный дом",
@@ -43,7 +43,7 @@ const type = [
   "Коммерческая недвижимость",
 ]
 
-const own = [
+const owns = [
   "Нет, я пока не владею недвижимостью",
   "Да, у меня уже есть недвижимость в собственности",
   "Я собираюсь продать единственную недвижимость в ближайшие два года, чтобы использовать полученный капитал для приобретения новой"
@@ -105,6 +105,10 @@ export function Calculator() {
   const [periodIndex, setPeriodIndex] = useState(-1);
   const [typeIndex, setTypeIndex] = useState(-1);
   const [ownIndex, setOwnIndex] = useState(-1);
+  const [cityError, setCityError] = useState(false);
+  const [periodError, setPeriodError] = useState(false);
+  const [typeError, setTypeError] = useState(false);
+  const [ownError, setOwnError] = useState(false);
 
   const [duration, setDuration] = useState(26);
   const [durationError, setDurationError] = useState("");
@@ -146,93 +150,148 @@ export function Calculator() {
   return (
     <div className="calculator-page">
       <h1>Рассчитайте ипотеку быстро и просто</h1>
-      <Input
-        value={price}
-        onChange={onPriceChange}
-        error={priceError}
-        label="Стоимость недвижимости"
-      />
-      <Select
-        options={cities}
-        error={''}
-        optionIndex={cityIndex}
-        setOptionIndex={setCityIndex}
-        label="Город покупки недвижимости"
-        placeholder="Выберите город"
-        withSearch
-      />
-      <Select
-        options={period}
-        error={''}
-        optionIndex={periodIndex}
-        setOptionIndex={setPeriodIndex}
-        label="Когда вы планируете оформить ипотеку?"
-        placeholder="Выберите период"
-      />
-      <Input
-        value={firstPayment}
-        onChange={onFirstPaymentChange}
-        error={firstPaymentError}
-        label="Первоначальный взнос"
-        max={price}
-        warning={`Cумма финансирования: <strong>${firstPayment.toLocaleString("en-US")}</strong> ₪ <br/>  Процент финансирования:${Math.round(firstPayment / price * 100)}%`}
-        tooltip={tooltip}
-      />
-      <Select
-        options={type}
-        error={''}
-        optionIndex={typeIndex}
-        setOptionIndex={setTypeIndex}
-        label="Тип недвижимости"
-        placeholder="Выберите тип недвижимости"
-      />
-      <Select
-        options={own}
-        error={''}
-        optionIndex={ownIndex}
-        setOptionIndex={setOwnIndex}
-        label="Вы уже владеете недвижимостью?"
-        placeholder="Выберите ответ"
-      />
+      <div className="row">
+        <div className="cell">
+          <Input
+            value={price}
+            onChange={onPriceChange}
+            error={priceError}
+            label="Стоимость недвижимости"
+          />
+        </div>
+        <div className="cell">
+          <Select
+            options={cities}
+            error={cityError ? "Выберите ответ" : ''}
+            optionIndex={cityIndex}
+            setOptionIndex={(index) => {
+              setCityError(false);
+              setCityIndex(index);
+            }}
+            label="Город покупки недвижимости"
+            placeholder="Выберите город"
+            withSearch
+          />
+        </div>
+        <div className="cell">
+          <Select
+            options={periods}
+            error={periodError ? "Выберите ответ" : ''}
+            optionIndex={periodIndex}
+            setOptionIndex={(index) => {
+              setPeriodError(false);
+              setPeriodIndex(index);
+            }}
+            label="Когда вы планируете оформить ипотеку?"
+            placeholder="Выберите период"
+          />
+        </div>
+      </div>
+      <div className="row">
+        <div className="cell">
+          <Input
+            value={firstPayment}
+            onChange={onFirstPaymentChange}
+            error={firstPaymentError}
+            label="Первоначальный взнос"
+            max={price}
+            warning={`Cумма финансирования: <strong>${firstPayment.toLocaleString("en-US")}</strong> ₪ <br/>  Процент финансирования:${Math.round(firstPayment / price * 100)}%`}
+            tooltip={tooltip}
+          />
+        </div>
+        <div className="cell">
+          <Select
+            options={types}
+            error={typeError ? "Выберите ответ" : ''}
+            optionIndex={typeIndex}
+            setOptionIndex={(index) => {
+              setTypeError(false);
+              setTypeIndex(index);
+            }}
+            label="Тип недвижимости"
+            placeholder="Выберите тип недвижимости"
+          />
+        </div>
+        <div className="cell">
+          <Select
+            options={owns}
+            error={ownError ? "Выберите ответ" : ''}
+            optionIndex={ownIndex}
+            setOptionIndex={(index) => {
+              setOwnError(false);
+              setOwnIndex(index);
+            }}
+            label="Вы уже владеете недвижимостью?"
+            placeholder="Выберите ответ"
+          />
+        </div>
+      </div>
       <div className="hr"/>
-      <Input
-        value={duration}
-        onChange={onDurationChange}
-        error={durationError}
-        label="Срок ипотеки"
-        max={diffDuration}
-        min={minDuration}
-        label2={(
-          <div className="duration-label">
-            <div>{minDuration} года</div>
-            <div>{maxDuration} лет</div>
-          </div>
-        )}
-      />
-      <Input
-        value={monthlyPayment}
-        onChange={onMonthlyPaymentChange}
-        error={monthlyPaymentError}
-        label="Ежемесячный платеж"
-        warning="Увеличьте ежемесячный платеж и переплачивайте меньше"
-        label2={(
-          <div className="duration-label">
-            <div>{minMonthlyPayment.toLocaleString("en-US")} ₪</div>
-            <div>{maxMonthlyPayment.toLocaleString("en-US")} ₪</div>
-          </div>
-        )}
-        min={minMonthlyPayment}
-        max={maxMonthlyPayment - minMonthlyPayment}
-      />
+      <div className="row">
+        <div className="cell">
+          <Input
+            value={duration}
+            onChange={onDurationChange}
+            error={durationError}
+            label="Срок ипотеки"
+            max={diffDuration}
+            min={minDuration}
+            label2={(
+              <div className="duration-label">
+                <div>{minDuration} года</div>
+                <div>{maxDuration} лет</div>
+              </div>
+            )}
+          />
+        </div>
+        <div className="cell">
+          <Input
+            value={monthlyPayment}
+            onChange={onMonthlyPaymentChange}
+            error={monthlyPaymentError}
+            label="Ежемесячный платеж"
+            warning="Увеличьте ежемесячный платеж и переплачивайте меньше"
+            label2={(
+              <div className="duration-label">
+                <div>{minMonthlyPayment.toLocaleString("en-US")} ₪</div>
+                <div>{maxMonthlyPayment.toLocaleString("en-US")} ₪</div>
+              </div>
+            )}
+            min={minMonthlyPayment}
+            max={maxMonthlyPayment - minMonthlyPayment}
+          />
+        </div>
+      </div>
       <div className="hr full"/>
       <div className="submit-wrapper">
         <button type="button" className={buttonActive ? 'active' : ""} onClick={() => {
           if (!buttonActive) {
-            console.log('show errors')
+            if (cityIndex === -1) {
+              setCityError(true);
+            }
+            if (periodIndex === -1) {
+              setPeriodError(true);
+            }
+            if (typeIndex === -1) {
+              setTypeError(true);
+            }
+            if (ownIndex === -1) {
+              setOwnError(true);
+            }
           } else {
-            console.log("save to LS")
+            localStorage.setItem('result', JSON.stringify({
+              price,
+              firstPayment,
+              city: cities[cityIndex],
+              period: periods[periodIndex],
+              type: types[typeIndex],
+              own: owns[ownIndex],
+              duration: duration + minDuration,
+              monthlyPayment: monthlyPayment + minMonthlyPayment,
+            }))
           }
-        }}>Продолжить</button>
+        }}>Продолжить
+        </button>
       </div>
     </div>
   )
