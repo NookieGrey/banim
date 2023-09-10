@@ -3,8 +3,10 @@ import {useState} from 'react'
 import {Select} from "./widgets/Select/Select";
 import {Input} from "./widgets/Input/Input";
 
+// max possible value of the price
 const maxPrice = 10000000;
 
+// array of available cities shown in dropdown
 const cities = [
   "Тель-Авив",
   "Акко",
@@ -28,6 +30,7 @@ const cities = [
   "Зихрон-Яаков",
 ];
 
+// array of available periods shown in dropdown
 const periods = [
   "В ближайший месяц",
   "В ближайшие 2 месяц",
@@ -35,6 +38,7 @@ const periods = [
   "В ближайшие 6 месяцев",
 ]
 
+// array of available types shown in dropdown
 const types = [
   "Квартира от застройщика",
   "Квартира на вторичном рынке",
@@ -43,12 +47,15 @@ const types = [
   "Коммерческая недвижимость",
 ]
 
+// array of available owns shown in dropdown
 const owns = [
   "Нет, я пока не владею недвижимостью",
   "Да, у меня уже есть недвижимость в собственности",
   "Я собираюсь продать единственную недвижимость в ближайшие два года, чтобы использовать полученный капитал для приобретения новой"
 ]
 
+// predefined component to be shown on hint hover
+// some styles included in select.css
 const tooltip = (
   <div className="tooltip">
     <div>Основная квартира: у заемщика нет квартиры ставка финансирования</div>
@@ -64,14 +71,16 @@ const tooltip = (
   </div>
 )
 
-const minDuration = 4;
-const maxDuration = 30;
-const diffDuration = maxDuration - minDuration;
+const minDuration = 4; // min possible value of duration
+const maxDuration = 30; // max possible value of duration
+const diffDuration = maxDuration - minDuration; // diff needed to be used with value
 
 export function Calculator() {
-  const [price, setPrice] = useState(1000000);
+  const [price, setPrice] = useState(1000000); // on first render show 1,000,000
   const [priceError, setPriceError] = useState("");
 
+  // price should exist
+  // should be less than max possible value
   const onPriceChange = (price: number) => {
     if (!price) {
       setPriceError('Введите значение')
@@ -84,9 +93,12 @@ export function Calculator() {
     setPrice(price);
   }
 
-  const [firstPayment, setFirstPayment] = useState(500000);
+  const [firstPayment, setFirstPayment] = useState(500000); // on first render show 50% of price
   const [firstPaymentError, setFirstPaymentError] = useState("");
 
+  // first payment should exist
+  // should be less than price
+  // and more than 25% of the price
   const onFirstPaymentChange = (firstPayment: number) => {
     if (!firstPayment) {
       setFirstPaymentError('Введите значение')
@@ -101,18 +113,22 @@ export function Calculator() {
     setFirstPayment(firstPayment);
   }
 
+  // variables for selects
   const [cityIndex, setCityIndex] = useState(-1);
   const [periodIndex, setPeriodIndex] = useState(-1);
   const [typeIndex, setTypeIndex] = useState(-1);
   const [ownIndex, setOwnIndex] = useState(-1);
+
+  // selects errors status
   const [cityError, setCityError] = useState(false);
   const [periodError, setPeriodError] = useState(false);
   const [typeError, setTypeError] = useState(false);
   const [ownError, setOwnError] = useState(false);
 
-  const [duration, setDuration] = useState(26);
+  const [duration, setDuration] = useState(diffDuration); // on first render should be max possible value
   const [durationError, setDurationError] = useState("");
 
+  // duration should be less than max possible value
   const onDurationChange = (duration: number) => {
     if (duration > diffDuration) {
       setDurationError(`Cрок ипотеки не может превышать ${maxDuration} лет`)
@@ -121,6 +137,7 @@ export function Calculator() {
     }
 
     setDuration(duration);
+    // recalculate monthly payment on duration change
     setMonthlyPayment(Math.round((price - firstPayment) / (duration + minDuration) / 12 - minMonthlyPayment))
   }
 
@@ -130,6 +147,8 @@ export function Calculator() {
   const minMonthlyPayment = Math.round((price - firstPayment) / (maxDuration) / 12);
   const maxMonthlyPayment = Math.round((price - firstPayment) / (minDuration) / 12);
 
+  // monthly payment should exist
+  // should be less than max possible value
   const onMonthlyPaymentChange = (monthlyPayment: number) => {
     if (monthlyPayment < 0) {
       setMonthlyPaymentError(`Размер ежемесячного платежа не может быть меньше ${minMonthlyPayment.toLocaleString('en-US')} иначе срок будет больше ${maxDuration} лет`)
@@ -141,11 +160,12 @@ export function Calculator() {
 
     setMonthlyPayment(monthlyPayment);
 
+    // recalculate duration on monthly payment change
     setDuration(Math.round((price - firstPayment) / (monthlyPayment + minMonthlyPayment) / 12 - minDuration))
   }
 
+  // button clickable but has disabled styles
   const buttonActive = !priceError && !firstPaymentError && cityIndex !== -1 && periodIndex !== -1 && typeIndex !== -1 && ownIndex !== -1 && !durationError && !monthlyPaymentError;
-
 
   return (
     <div className="calculator-page">
@@ -195,7 +215,7 @@ export function Calculator() {
             error={firstPaymentError}
             label="Первоначальный взнос"
             max={price}
-            warning={`Cумма финансирования: <strong>${firstPayment.toLocaleString("en-US")}</strong> ₪ <br/>  Процент финансирования:${Math.round(firstPayment / price * 100)}%`}
+            warning={`Сумма финансирования: <strong>${firstPayment.toLocaleString("en-US")}</strong> ₪ <br/>  Процент финансирования: ${Math.round(firstPayment / price * 100)}%`}
             tooltip={tooltip}
           />
         </div>
@@ -265,6 +285,7 @@ export function Calculator() {
       <div className="hr full"/>
       <div className="submit-wrapper">
         <button type="button" className={buttonActive ? 'active' : ""} onClick={() => {
+          // we check is errors presents and highlight selectors that should be selected
           if (!buttonActive) {
             if (cityIndex === -1) {
               setCityError(true);
@@ -279,6 +300,7 @@ export function Calculator() {
               setOwnError(true);
             }
           } else {
+            // otherwise store data in localStorage
             localStorage.setItem('result', JSON.stringify({
               price,
               firstPayment,
@@ -290,7 +312,8 @@ export function Calculator() {
               monthlyPayment: monthlyPayment + minMonthlyPayment,
             }))
           }
-        }}>Продолжить
+        }}>
+          Продолжить
         </button>
       </div>
     </div>
