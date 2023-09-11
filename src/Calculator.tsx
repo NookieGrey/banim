@@ -75,9 +75,59 @@ const minDuration = 4; // min possible value of duration
 const maxDuration = 30; // max possible value of duration
 const diffDuration = maxDuration - minDuration; // diff needed to be used with value
 
+const mortgageRateYear = 14.5 / 100; // default mortgage rate by year
+const mortgageRateMonth = mortgageRateYear / 12; // default mortgage rate by month
+
+function calculateTotalDebitAmount(totalDebitValue: number, duration: number): number {
+  // calculations get from this link
+  // https://www.vtb.ru/articles/kak-rasschityvaetsya-ipoteka/
+  return Math.round(totalDebitValue * mortgageRateMonth / (1 - Math.pow((1 + mortgageRateMonth), -(duration * 12 + 1))));
+}
+
+function calculateDurationByMonthlyPayment(totalDebitValue: number, monthlyPayment: number) {
+  // reverse calculations
+  // monthlyPayment = totalDebitValue * G / (1 - Math.pow((1 + G), -(duration * 12 + 1)))
+  // 1 - Math.pow((1 + G), -(duration * 12 + 1)) = totalDebitValue * G / monthlyPayment
+  // 1 - totalDebitValue * G / monthlyPayment = Math.pow((1 + G), -(duration * 12 + 1))
+  // a = Math.pow(b, c);
+  // c = Math.log(a)/Math.log(b);
+  // -(duration * 12 + 1) = Math.log(1 - totalDebitValue * G / monthlyPayment) / Math.log(1 + G)
+  return Math.round((-1 * Math.log(1 - totalDebitValue * mortgageRateMonth / monthlyPayment) / Math.log(1 + mortgageRateMonth) - 1) / 12);
+}
+
+
 export function Calculator() {
   const [price, setPrice] = useState(1000000); // on first render show 1,000,000
   const [priceError, setPriceError] = useState("");
+
+  const [firstPayment, setFirstPayment] = useState(500000); // on first render show 50% of price
+  const [firstPaymentError, setFirstPaymentError] = useState("");
+
+  const totalDebtValue = price - firstPayment; // needed value till total price
+
+  // variables for selects
+  const [cityIndex, setCityIndex] = useState(-1);
+  const [periodIndex, setPeriodIndex] = useState(-1);
+  const [typeIndex, setTypeIndex] = useState(-1);
+  const [ownIndex, setOwnIndex] = useState(-1);
+
+  // selects errors status
+  const [cityError, setCityError] = useState(false);
+  const [periodError, setPeriodError] = useState(false);
+  const [typeError, setTypeError] = useState(false);
+  const [ownError, setOwnError] = useState(false);
+
+  const [duration, setDuration] = useState(diffDuration); // on first render should be max possible value
+  const [durationError, setDurationError] = useState("");
+
+  const [monthlyPayment, setMonthlyPayment] = useState(0);
+  const [monthlyPaymentError, setMonthlyPaymentError] = useState("");
+
+  const minMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, maxDuration);
+  const maxMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, minDuration);
+
+  // button clickable but has disabled styles
+  const buttonActive = !priceError && !firstPaymentError && cityIndex !== -1 && periodIndex !== -1 && typeIndex !== -1 && ownIndex !== -1 && !durationError && !monthlyPaymentError;
 
   // price should exist
   // should be less than max possible value
@@ -92,9 +142,6 @@ export function Calculator() {
 
     setPrice(price);
   }
-
-  const [firstPayment, setFirstPayment] = useState(500000); // on first render show 50% of price
-  const [firstPaymentError, setFirstPaymentError] = useState("");
 
   // first payment should exist
   // should be less than price
@@ -113,21 +160,6 @@ export function Calculator() {
     setFirstPayment(firstPayment);
   }
 
-  // variables for selects
-  const [cityIndex, setCityIndex] = useState(-1);
-  const [periodIndex, setPeriodIndex] = useState(-1);
-  const [typeIndex, setTypeIndex] = useState(-1);
-  const [ownIndex, setOwnIndex] = useState(-1);
-
-  // selects errors status
-  const [cityError, setCityError] = useState(false);
-  const [periodError, setPeriodError] = useState(false);
-  const [typeError, setTypeError] = useState(false);
-  const [ownError, setOwnError] = useState(false);
-
-  const [duration, setDuration] = useState(diffDuration); // on first render should be max possible value
-  const [durationError, setDurationError] = useState("");
-
   // duration should be less than max possible value
   const onDurationChange = (duration: number) => {
     if (duration > diffDuration) {
@@ -137,15 +169,10 @@ export function Calculator() {
     }
 
     setDuration(duration);
+
     // recalculate monthly payment on duration change
-    setMonthlyPayment(Math.round((price - firstPayment) / (duration + minDuration) / 12 - minMonthlyPayment))
+    setMonthlyPayment(calculateTotalDebitAmount(totalDebtValue, duration + minDuration) - minMonthlyPayment)
   }
-
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
-  const [monthlyPaymentError, setMonthlyPaymentError] = useState("");
-
-  const minMonthlyPayment = Math.round((price - firstPayment) / (maxDuration) / 12);
-  const maxMonthlyPayment = Math.round((price - firstPayment) / (minDuration) / 12);
 
   // monthly payment should exist
   // should be less than max possible value
@@ -161,11 +188,8 @@ export function Calculator() {
     setMonthlyPayment(monthlyPayment);
 
     // recalculate duration on monthly payment change
-    setDuration(Math.round((price - firstPayment) / (monthlyPayment + minMonthlyPayment) / 12 - minDuration))
+    setDuration(calculateDurationByMonthlyPayment(totalDebtValue, monthlyPayment + minMonthlyPayment) - minDuration);
   }
-
-  // button clickable but has disabled styles
-  const buttonActive = !priceError && !firstPaymentError && cityIndex !== -1 && periodIndex !== -1 && typeIndex !== -1 && ownIndex !== -1 && !durationError && !monthlyPaymentError;
 
   return (
     <div className="calculator-page">
