@@ -160,43 +160,68 @@ export function Calculator() {
     checkFirstPaymentError(price, firstPayment);
 
     setPrice(price);
+
+    onDurationChange(duration, price, firstPayment);
   }
 
   const onFirstPaymentChange = (firstPayment: number) => {
     checkFirstPaymentError(price, firstPayment);
 
     setFirstPayment(firstPayment);
+
+    onDurationChange(duration, price, firstPayment);
   }
 
   // duration should be less than max possible value
-  const onDurationChange = (duration: number) => {
+  const checkDuration = (duration: number) => {
     if (duration > diffDuration) {
       setDurationError(`Cрок ипотеки не может превышать ${maxDuration} лет`)
     } else {
       setDurationError("")
     }
-
-    setDuration(duration);
-
-    // recalculate monthly payment on duration change
-    setMonthlyPayment(calculateTotalDebitAmount(totalDebtValue, duration + minDuration) - minMonthlyPayment)
   }
 
   // monthly payment should exist
   // should be less than max possible value
-  const onMonthlyPaymentChange = (monthlyPayment: number) => {
+  const checkMonthlyPayment = (monthlyPayment: number, newMinMonthlyPayment = minMonthlyPayment, newMaxMonthlyPayment = maxMonthlyPayment) => {
+
     if (monthlyPayment < 0) {
       setMonthlyPaymentError(`Размер ежемесячного платежа не может быть меньше ${minMonthlyPayment.toLocaleString('en-US')} иначе срок будет больше ${maxDuration} лет`)
-    } else if (monthlyPayment > maxMonthlyPayment - minMonthlyPayment) {
+    } else if (monthlyPayment > newMaxMonthlyPayment - newMinMonthlyPayment) {
       setMonthlyPaymentError(`превышен максимально возможный срок ежемесячного платежа`)
     } else {
       setMonthlyPaymentError("")
     }
+  }
+
+  const onDurationChange = (duration: number, newPrice = price, newFirstPayment = firstPayment) => {
+    checkDuration(duration);
+
+    setDuration(duration);
+
+    const totalDebtValue = newPrice - newFirstPayment; // needed value till total price
+    let maxMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, minDuration);
+    let minMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, maxDuration);
+
+    // recalculate monthly payment on duration change
+    let newMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, duration + minDuration) - minMonthlyPayment;
+
+    checkMonthlyPayment((newMonthlyPayment < 0 || maxMonthlyPayment === 0) ? 0 : newMonthlyPayment, minMonthlyPayment, maxMonthlyPayment);
+
+    setMonthlyPayment((newMonthlyPayment < 0 || maxMonthlyPayment === 0) ? 0 : newMonthlyPayment)
+  }
+
+  const onMonthlyPaymentChange = (monthlyPayment: number) => {
+    checkMonthlyPayment(monthlyPayment);
 
     setMonthlyPayment(monthlyPayment);
 
     // recalculate duration on monthly payment change
-    setDuration(calculateDurationByMonthlyPayment(totalDebtValue, monthlyPayment + minMonthlyPayment) - minDuration);
+    const newDuration = calculateDurationByMonthlyPayment(totalDebtValue, monthlyPayment + minMonthlyPayment) - minDuration;
+
+    checkDuration(newDuration < 0 ? 0 : newDuration);
+
+    setDuration(newDuration < 0 ? 0 : newDuration);
   }
 
   return (
