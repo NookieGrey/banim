@@ -123,11 +123,28 @@ export function Calculator() {
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [monthlyPaymentError, setMonthlyPaymentError] = useState("");
 
-  const minMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, maxDuration);
-  const maxMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, minDuration);
+  let minMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, maxDuration);
+  let maxMonthlyPayment = calculateTotalDebitAmount(totalDebtValue, minDuration);
+  if (minMonthlyPayment < 0) minMonthlyPayment = 0;
+  if (maxMonthlyPayment < 0) maxMonthlyPayment = 0;
 
   // button clickable but has disabled styles
   const buttonActive = !priceError && !firstPaymentError && cityIndex !== -1 && periodIndex !== -1 && typeIndex !== -1 && ownIndex !== -1 && !durationError && !monthlyPaymentError;
+
+  // first payment should exist
+  // should be less than price
+  // and more than 25% of the price
+  const checkFirstPaymentError = (price: number, firstPayment: number) => {
+    if (!firstPayment) {
+      setFirstPaymentError('Введите значение')
+    } else if (firstPayment > price) {
+      setFirstPaymentError(`Первоначальный взнос не может превышать стоимость недвижимости`)
+    } else if (firstPayment * 4 < price) {
+      setFirstPaymentError("Сумма первоначального взноса не может быть меньше 25% от стоимости недвижимости")
+    } else {
+      setFirstPaymentError("")
+    }
+  }
 
   // price should exist
   // should be less than max possible value
@@ -140,22 +157,13 @@ export function Calculator() {
       setPriceError("")
     }
 
+    checkFirstPaymentError(price, firstPayment);
+
     setPrice(price);
   }
 
-  // first payment should exist
-  // should be less than price
-  // and more than 25% of the price
   const onFirstPaymentChange = (firstPayment: number) => {
-    if (!firstPayment) {
-      setFirstPaymentError('Введите значение')
-    } else if (firstPayment > price) {
-      setFirstPaymentError(`Первоначальный взнос не может превышать стоимость недвижимости`)
-    } else if (firstPayment * 4 < price) {
-      setFirstPaymentError("Сумма первоначального взноса не может быть меньше 25% от стоимости недвижимости")
-    } else {
-      setFirstPaymentError("")
-    }
+    checkFirstPaymentError(price, firstPayment);
 
     setFirstPayment(firstPayment);
   }
